@@ -1,0 +1,27 @@
+diff --git a/openbsd-compat/explicit_bzero.c b/openbsd-compat/explicit_bzero.c
+index ac64e69..b205bdd 100644
+--- a/openbsd-compat/explicit_bzero.c
++++ b/openbsd-compat/explicit_bzero.c
+@@ -28,10 +28,10 @@ explicit_bzero(void *p, size_t n)
+ #else /* HAVE_MEMSET_S */
+ 
+ /*
+- * Indirect bzero through a volatile pointer to hopefully avoid
++ * Indirect memset through a volatile pointer to hopefully avoid
+  * dead-store optimisation eliminating the call.
+  */
+-static void (* volatile ssh_bzero)(void *, size_t) = bzero;
++static void *(* volatile ssh_memset)(void *, int, size_t) = memset;
+ 
+ void
+ explicit_bzero(void *p, size_t n)
+@@ -49,7 +49,7 @@ explicit_bzero(void *p, size_t n)
+ # endif
+ #endif
+ 
+-	ssh_bzero(p, n);
++	ssh_memset(p, 0, n);
+ }
+ 
+ #endif /* HAVE_MEMSET_S */
+
