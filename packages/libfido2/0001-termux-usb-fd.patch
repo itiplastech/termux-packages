@@ -1,0 +1,64 @@
+diff --git a/src/hid_linux.c b/src/hid_linux.c
+index cc6957ac8c..8d60fa75c0 100644
+--- a/src/hid_linux.c
++++ b/src/hid_linux.c
+@@ -262,16 +262,27 @@ fido_hid_open(const char *path)
+ 	struct timespec tv_pause;
+ 	long interval_ms, retries = 0;
+ 	bool looped;
++        bool termux_fd_mode = false;
++	const char *termux_fd;
+ 
+ retry:
+ 	looped = false;
+ 
+-	if ((ctx = calloc(1, sizeof(*ctx))) == NULL ||
+-	    (ctx->fd = fido_hid_unix_open(path)) == -1) {
++	if ((ctx = calloc(1, sizeof(*ctx))) == NULL)
++		return (NULL);
++
++        if ((termux_fd = getenv("TERMUX_USB_FD")) != NULL) {
++                ctx->fd = atoi(termux_fd);
++                termux_fd_mode = true;
++        } else {
++                ctx->fd = fido_hid_unix_open(path);
++        }
++	if (ctx->fd == -1) {
+ 		free(ctx);
+ 		return (NULL);
+ 	}
+ 
++        if (!termux_fd_mode) {
+ 	while (flock(ctx->fd, LOCK_EX|LOCK_NB) == -1) {
+ 		if (errno != EWOULDBLOCK) {
+ 			fido_log_error(errno, "%s: flock", __func__);
+@@ -294,6 +305,7 @@ retry:
+ 		}
+ 	}
+ 
++        }
+ 	if (looped) {
+ 		fido_log_debug("%s: retrying", __func__);
+ 		fido_hid_close(ctx);
+@@ -320,8 +332,13 @@ fido_hid_close(void *handle)
+ {
+ 	struct hid_linux *ctx = handle;
+ 
+-	if (close(ctx->fd) == -1)
+-		fido_log_error(errno, "%s: close", __func__);
++	if (ctx == NULL)
++		return;
++
++	if (getenv("TERMUX_USB_FD") == NULL) {
++		if (close(ctx->fd) == -1)
++			fido_log_error(errno, "%s: close", __func__);
++	}
+ 
+ 	free(ctx);
+ }
+@@ -405,3 +422,4 @@ fido_hid_report_out_len(void *handle)
+ 
+ 	return (ctx->report_out_len);
+ }
++
+

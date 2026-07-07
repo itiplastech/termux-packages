@@ -6,7 +6,8 @@ TERMUX_PKG_VERSION="10.3p1"
 TERMUX_PKG_REVISION=1
 TERMUX_PKG_SRCURL=https://github.com/openssh/openssh-portable/archive/refs/tags/V_$(sed 's/\./_/g; s/p/_P/g' <<< $TERMUX_PKG_VERSION).tar.gz
 TERMUX_PKG_SHA256=c1a4420b1a25ba7336f62afd42ed5974d93455a2ab8c769b5e8e0c8ff8eedadc
-TERMUX_PKG_DEPENDS="krb5, ldns, libandroid-support, libedit, openssh-sftp-server, openssl, termux-auth, zlib"
+TERMUX_PKG_DEPENDS="krb5, ldns, libandroid-support, libedit, libfido2, openssh-sftp-server, openssl, termux-auth, zlib"
+TERMUX_PKG_BUILD_DEPENDS="libfido2"
 TERMUX_PKG_SUGGESTS="termux-services"
 TERMUX_PKG_CONFLICTS="dropbear"
 TERMUX_PKG_AUTO_UPDATE=true
@@ -39,6 +40,7 @@ TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
 --with-xauth=$TERMUX_PREFIX/bin/xauth
 --with-kerberos5
 --with-default-path=$TERMUX_PREFIX/bin
+--with-security-key-builtin
 ac_cv_func_endgrent=yes
 ac_cv_func_fmt_scaled=no
 ac_cv_func_getlastlogxbyname=no

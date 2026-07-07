@@ -1,0 +1,29 @@
+diff --git a/ssh-sk-client.c b/ssh-sk-client.c
+index 52da28d1f4..cbac678020 100644
+--- a/ssh-sk-client.c
++++ b/ssh-sk-client.c
+@@ -98,9 +98,17 @@ start_helper(int *fdp, pid_t *pidp, void (**osigchldp)(int))
+ 		}
+ 		close(pair[0]);
+ 		close(pair[1]);
+-		closefrom(STDERR_FILENO + 1);
++                if (getenv("TERMUX_USB_FD") == NULL)
++                        closefrom(STDERR_FILENO + 1);
+ 		debug_f("starting %s %s", helper,
+ 		    verbosity == NULL ? "" : verbosity);
++                if (getenv("TERMUX_USB_FD") != NULL) {
++                        int usb_fd, flags;
++                        usb_fd = atoi(getenv("TERMUX_USB_FD"));
++                        if ((flags = fcntl(usb_fd, F_GETFD)) != -1)
++                                fcntl(usb_fd, F_SETFD, flags & ~FD_CLOEXEC);
++                }
++
+ 		execlp(helper, helper, verbosity, (char *)NULL);
+ 		snprintf(execbuf, sizeof execbuf,
+ 		    "execlp: %s", strerror(errno));
+@@ -498,3 +506,4 @@ sshsk_load_resident(const char *provider_path, const char *device,
+ 	errno = oerrno;
+ 	return r;
+ }
++
+
